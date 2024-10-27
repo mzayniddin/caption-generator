@@ -4,11 +4,18 @@ import { randomUUID } from 'crypto';
 export async function POST(req: Request) {
   const formData = await req.formData();
 
-  const file = formData.get('file');
+  const file = formData.get('file') as File | null;
+
+  if (!file) {
+    return new Response(JSON.stringify({ error: 'File is missing' }), {
+      status: 400,
+    });
+  }
 
   const { name, type } = file;
 
-  const data = await file?.arrayBuffer();
+  const arrayBuffer = await file.arrayBuffer();
+  const data = Buffer.from(arrayBuffer);
 
   const s3Client = new S3Client({
     region: 'ap-northeast-2',
